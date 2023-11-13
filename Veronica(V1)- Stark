@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: Unlicensed
+# Cairo version 0.6.2
+
+from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.math import assert_not_zero
+from starkware.cairo.common.registers import get_fp_and_pc
+from starkware.starknet.common.storage import Storage
+from starkware.starknet.services.api.gateway.felt import get_caller_address
+from starkware.starknet.services.api.gateway.felt import get_l1_address
+
+@storage_var
+func posts(post_id: felt) -> (poster: felt, message: felt):
+    pass
+
+@storage_var
+func post_counter() -> (counter: felt):
+    pass
+
+@external
+func post_message(message: felt):
+    # Get the caller's address.
+    let (poster,) = get_caller_address()
+
+    # Get the current post counter.
+    let (counter,) = post_counter.read()
+
+    # Write the new post.
+    posts.write(counter, poster, message)
+
+    # Increment the post counter.
+    post_counter.write(counter + 1)
+
+    return ()
+
+@view
+func get_post(post_id: felt) -> (poster: felt, message: felt):
+    # Get the post.
+    let (poster, message) = posts.read(post_id)
+
+    return (poster, message)
