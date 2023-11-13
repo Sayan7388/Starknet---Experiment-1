@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: Unlicensed
+# Cairo version 0.6.2
+
+from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.math import assert_not_zero
+from starkware.cairo.common.registers import get_fp_and_pc
+from starkware.starknet.common.storage import Storage
+from starkware.starknet.services.api.gateway.felt import get_caller_address
+from starkware.starknet.services.api.gateway.felt import get_l1_address
+
+@storage_var
+func videos(video_id: felt) -> (uploader: felt, video: felt):
+    pass
+
+@storage_var
+func video_counter() -> (counter: felt):
+    pass
+
+@external
+func upload_video(video: felt):
+    # Get the uploader's address.
+    let (uploader,) = get_caller_address()
+
+    # Get the current video counter.
+    let (counter,) = video_counter.read()
+
+    # Write the new video.
+    videos.write(counter, uploader, video)
+
+    # Increment the video counter.
+    video_counter.write(counter + 1)
+
+    return ()
+
+@view
+func get_video(video_id: felt) -> (uploader: felt, video: felt):
+    # Get the video.
+    let (uploader, video) = videos.read(video_id)
+
+    return (uploader, video)
